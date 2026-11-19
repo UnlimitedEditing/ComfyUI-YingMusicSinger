@@ -119,6 +119,13 @@ class YingMusicSingerSing:
 
     def sing(self, model, ref_audio, ref_text, melody_audio, target_text, lrc_align_mode, nfe_step, cfg_strength,
              t_shift, seed, sil_len_to_end):
+        # Graydient slot values stop at the first space, so the reference words may be given with underscores for spaces,
+        # or after an @@ separator in the lyrics ("target lyrics @@ reference lyrics").
+        if "@@" in target_text:
+            target_text, tail = target_text.split("@@", 1)
+            if not ref_text.strip() or ref_text.strip() in ("-", "none"):
+                ref_text = tail
+        ref_text = ref_text.replace("_", " ")
         d = tempfile.mkdtemp(dir=TEMP_DIR)
         rp, mp = os.path.join(d, "ref.wav"), os.path.join(d, "melody.wav")
         rdur = _write_wav(ref_audio, rp)
